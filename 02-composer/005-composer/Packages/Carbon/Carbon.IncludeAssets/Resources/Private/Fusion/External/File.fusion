@@ -1,0 +1,72 @@
+/**
+ * This prototype outputs the tag for including HTML, JS, MJS or CSS
+ */
+
+prototype(Carbon.IncludeAssets:File) < prototype(Neos.Fusion:Component) {
+    @propTypes {
+        file = ${PropTypes.string}
+        assetPackage = ${PropTypes.string}
+        cacheBuster = ${PropTypes.boolean}
+        disableCacheBusterForPreloadAsset = ${PropTypes.boolean}
+        assetPath = ${PropTypes.string}
+        wrapper = ${PropTypes.string}
+    }
+
+    file = null
+    assetPackage = ${node.context.currentSite.siteResourcesPackageKey}
+    cacheBuster = ${Configuration.setting('Carbon.IncludeAssets.Default.CacheBuster')}
+    disableCacheBusterForPreloadAsset = ${Configuration.setting('Carbon.IncludeAssets.Default.DisableCacheBusterForPreloadAsset')}
+    assetPath = null
+    wrapper = null
+
+    // This is a internal variable, please use `assetPath` for an single file
+    paths = ${Configuration.setting('Carbon.IncludeAssets.Default.Path')}
+
+    @if.fileIsSet = ${this.file}
+
+    renderer = Neos.Fusion:Component {
+        @apply.props = ${props}
+
+        fileObject = ${Carbon.IncludeAssets.parseFilename(props.file)}
+        assetKey = ${this.fileObject.inline ? 'Inline' : 'File'}
+        type = ${this.fileObject.type}
+        finalAssetPath = ${props.assetPath || props.paths[this.assetKey][this.type]}
+        path = ${this.fileObject.external || this.fileObject.path ? this.fileObject.filename : this.assetPackage && this.finalAssetPath ? 'resource://' + this.assetPackage + '/' + this.finalAssetPath + '/' + this.fileObject.filename : false}
+
+        @if.hasPath = ${this.path}
+
+        renderer = Neos.Fusion:Case {
+            @process.wrapper = Carbon.IncludeAssets:Internal.Wrapper {
+                wrapper = ${props.wrapper}
+            }
+
+            inlineFile {
+                condition = ${props.fileObject.inline}
+                renderer = Carbon.IncludeAssets:Internal.InlineFile {
+                    attributes = ${props.fileObject.attributes}
+                    path = ${props.path}
+                    type = ${props.type}
+                }
+            }
+
+            isFile {
+                condition = ${props.path ? true : false}
+                renderer = Carbon.IncludeAssets:Internal.TypeCase {
+                    type = ${props.type}
+                    css = afx`
+                        <Carbon.IncludeAssets:Internal.Tag.CSS path={props.path} fileObject={props.fileObject} cacheBuster={props.cacheBuster} async={this.fileObject.async ? node.context.live : false} />
+                    `
+                    js = afx`
+                        <Carbon.IncludeAssets:Internal.Tag.JS path={props.path} fileObject={props.fileObject} cacheBuster={props.cacheBuster} />
+                    `
+                    preload = afx`
+                        <Carbon.IncludeAssets:Internal.Tag.ResourceHint rel='preload' path={props.path} fileObject={props.fileObject} cacheBuster={props.cacheBuster} disableCacheBusterForPreloadAsset={props.disableCacheBusterForPreloadAsset} />
+                    `
+                    modulePreload = afx`
+                        <Carbon.IncludeAssets:Internal.Tag.ResourceHint rel='modulepreload' path={props.path} fileObject={props.fileObject} cacheBuster={props.cacheBuster} />
+                    `
+                }
+            }
+        }
+    }
+}

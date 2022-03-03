@@ -1,0 +1,13 @@
+prototype(Carbon.IncludeAssets:MonocleAssets) < prototype(Carbon.IncludeAssets:Internal.Assets) {
+    prototype(Carbon.IncludeAssets:Case) {
+        @propTypes {
+            documentNode = ${PropTypes.boolean}
+        }
+        documentNode = false
+        alwaysInclude = true
+    }
+
+    prototype(Carbon.IncludeAssets:Internal.Package) {
+        monocle = true
+    }
+}

@@ -1,0 +1,55 @@
+/**
+ * This prototype include all assets of a package
+ */
+
+prototype(Carbon.IncludeAssets:Internal.Package) < prototype(Neos.Fusion:Component) {
+    // Body || Head || BodyStart || HeadStart
+    location = null
+    // The config for the package
+    config = Neos.Fusion:DataStructure
+
+    // Is this package rendererd in Monocle?
+    monocle = false
+
+    // Internal property
+    mergedConfig = ${Array.concat(Configuration.setting('Carbon.IncludeAssets.Default'), this.config)}
+    sitePackageKey = ${this.monocle ? sitePackageKey : node.context.currentSite.siteResourcesPackageKey}
+
+    renderer = Neos.Fusion:Component {
+        @if.hasCustomCondition = Neos.Fusion:Case {
+            custom {
+                condition = ${props.mergedConfig.ConditionPrototype && Type.isString(props.mergedConfig.ConditionPrototype)}
+                type = ${props.mergedConfig.ConditionPrototype}
+            }
+            default {
+                condition = true
+                renderer = true
+            }
+        }
+        assetPackage = ${props.mergedConfig.Package == 'SitePackage' ? props.sitePackageKey : props.mergedConfig.Package}
+        cacheBuster = ${props.mergedConfig.CacheBuster}
+        disableCacheBusterForPreloadAsset = ${props.mergedConfig.DisableCacheBusterForPreloadAsset}
+        paths = ${props.mergedConfig.Path}
+        wrapper = ${props.mergedConfig.Wrapper}
+        collection = Neos.Fusion:Map {
+            items = ${String.split(props.mergedConfig.Order, ',')}
+            itemRenderer = Neos.Fusion:Value {
+                condition = ${props.monocle ? item != 'Backend' : (item == 'General' || (item == 'Backend' && node.context.inBackend) || (item == 'Live' && node.context.live))}
+                value = ${this.condition ? props.mergedConfig[item][props.location] : false}
+                @process.convertToArray = ${Type.isString(value) ? String.split(value, ',') : value}
+            }
+            @process.filter = ${Array.filter(Carbon.Array.extractSubElements(value))}
+        }
+
+        renderer = afx`
+            <Carbon.IncludeAssets:Collection
+                assetPackage={props.assetPackage}
+                cacheBuster={props.cacheBuster}
+                disableCacheBusterForPreloadAsset={props.disableCacheBusterForPreloadAsset}
+                collection={props.collection}
+                paths={props.paths}
+                wrapper={props.wrapper}
+            />
+        `
+    }
+}

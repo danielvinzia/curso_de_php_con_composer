@@ -1,0 +1,52 @@
+prototype(Carbon.IncludeAssets:Internal.Tag) < prototype(Neos.Fusion:Component) {
+    path = null
+    fileObject = null
+    cacheBuster = false
+    async = ${this.fileObject.async}
+    external = ${this.fileObject.external}
+    search = ${this.fileObject.search}
+    attributes = ${this.fileObject.attributes}
+
+    @if.hasFileObject = ${this.fileObject}
+
+    renderer = Neos.Fusion:Join {
+        uri = Neos.Fusion:Case {
+            isExternal {
+                condition = ${props.external}
+                renderer = ${props.path + props.search}
+            }
+            isInternal {
+                condition = true
+                renderer = afx`
+                    <Neos.Fusion:ResourceUri path={props.path} />
+                    {props.search}
+                    <Neos.Fusion:Value @if.needCacheBuster={props.cacheBuster} divider={props.search ? '&' : '?'} hash={Carbon.FileContent.pathHash(props.path)} value={String.isBlank(this.hash) ? '' : this.divider + 'h=' + this.hash} />
+                `
+            }
+        }
+        @ignoreProperties = ${['uri']}
+    }
+}
+
+prototype(Carbon.IncludeAssets:Internal.Tag.ResourceHint) < prototype(Carbon.IncludeAssets:Internal.Tag) {
+    async = false
+    rel = null
+    disableCacheBusterForPreloadAsset = true
+    cacheBuster.@process.disableForPreloadasset = ${this.disableCacheBusterForPreloadAsset && this.fileObject && this.fileObject.type == 'PRELOADASSET' ? false : value}
+    @if.hasRel = ${this.rel}
+    renderer.resourceHint = ${'<link rel="' + props.rel + '" href="' + this.uri + '"' + props.attributes +' />'}
+}
+
+prototype(Carbon.IncludeAssets:Internal.Tag.JS) < prototype(Carbon.IncludeAssets:Internal.Tag) {
+    renderer.script = ${'<script src="' + this.uri + '"' + (props.async ? ' async' : '') + props.attributes +'></script>'}
+}
+
+prototype(Carbon.IncludeAssets:Internal.Tag.CSS) < prototype(Carbon.IncludeAssets:Internal.Tag) {
+    renderer {
+        asyncOpen = ${'<link rel="preload" as="style" onload="this.onload=null;this.rel=\'stylesheet\'" onerror="this.onload()"' + props.fileObject.attributes + ' href="' + this.uri + '" /><noscript>'}
+        asyncOpen.@if.render = ${props.async}
+        cssFile = ${'<link rel="stylesheet" href="' + this.uri + '"' + props.attributes + ' />'}
+        asyncClose = '</noscript>'
+        asyncClose.@if.render = ${props.async}
+    }
+}

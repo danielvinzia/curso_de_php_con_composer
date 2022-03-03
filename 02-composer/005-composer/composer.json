@@ -1,17 +1,30 @@
 {
-    "name": "danielvinzia/text",
-    "autoload": {
-        "psr-4": {
-            "Text\\": "src/"
-        },
-        "files": [
-            "src/helpers.php"
-        ]
+    "name": "danie/005-composer",
+    "description": "Ejemplo composer",
+    "type": "library",
+    "require": {
+        "jenssegers/date": "^4.0",
+        "carbon/includeassets": "dev-master"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit-mock-objects": "^3.1"
     },
-    "require": {
-        "nesbot/carbon": "^2.57"
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Danie\\005Composer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "danielvinzia",
+            "email": "danielvinzia@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "config": {
+        "allow-plugins": {
+            "neos/composer-plugin": true
+        }
     }
 }

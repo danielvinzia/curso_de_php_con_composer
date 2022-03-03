@@ -1,0 +1,31 @@
+{
+    "name": "carbon/includeassets",
+    "type": "neos-carbon",
+    "description": "Include your assets (css, js) in an easy way into Neos",
+    "license": "GPL-3.0-or-later",
+    "keywords": ["flow", "neos", "fusion", "helper", "carbon"],
+    "require": {
+        "neos/neos": "^5.3 || ^7.0 || dev-master",
+        "neos/fusion-afx": "^1.0 || ^7.0 || dev-master",
+        "carbon/eel": "^1.7 || ^2.0 || dev-master"
+    },
+    "authors": [
+        {
+            "name": "Jon Uhlmann",
+            "email": "hello@uhlmann.pro",
+            "homepage": "https://www.uhlmann.pro",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Carbon\\IncludeAssets\\": "Classes"
+        }
+    },
+    "extra": {
+        "installer-name": "Carbon.IncludeAssets",
+        "neos": {
+            "package-key": "Carbon.IncludeAssets"
+        }
+    }
+}

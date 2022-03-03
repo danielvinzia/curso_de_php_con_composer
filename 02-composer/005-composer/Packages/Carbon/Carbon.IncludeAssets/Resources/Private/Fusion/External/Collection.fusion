@@ -1,0 +1,55 @@
+/**
+ * This prototype output a collection of files
+ */
+
+prototype(Carbon.IncludeAssets:Collection) < prototype(Neos.Fusion:Component) {
+     @propTypes {
+        collection = ${PropTypes.arrayOf(PropTypes.string)}
+        assetPackage = ${PropTypes.string}
+        cacheBuster = ${PropTypes.boolean}
+        disableCacheBusterForPreloadAsset = ${PropTypes.boolean}
+        paths = ${
+            PropTypes.dataStructure({
+                'Inline': PropTypes.dataStructure({
+                    'CSS': PropTypes.string,
+                    'JS': PropTypes.string,
+                    'MJS': PropTypes.string,
+                    'HTML': PropTypes.string
+                }),
+                'File': PropTypes.dataStructure({
+                    'CSS': PropTypes.string,
+                    'JS': PropTypes.string,
+                    'MJS': PropTypes.string,
+                    'PRELOADASSET': PropTypes.string,
+                    'PRELOADCSS': PropTypes.string,
+                    'PRELOADSCRIPT': PropTypes.string,
+                    'MODULEPRELOAD': PropTypes.string
+                })
+            }).isRequired
+        }
+        wrapper = ${PropTypes.string}
+    }
+
+    collection = ${[]}
+    assetPackage = null
+    cacheBuster = ${Configuration.setting('Carbon.IncludeAssets.Default.CacheBuster')}
+    disableCacheBusterForPreloadAsset = ${Configuration.setting('Carbon.IncludeAssets.Default.DisableCacheBusterForPreloadAsset')}
+    paths = ${Configuration.setting('Carbon.IncludeAssets.Default.Path')}
+    wrapper = null
+
+    @if.hasAssetPackage = ${this.assetPackage && Type.isArray(this.collection) && Array.length(this.collection)}
+
+    renderer = afx`
+        <Carbon.IncludeAssets:Internal.Wrapper wrapper={props.wrapper}>
+            <Neos.Fusion:Loop items={props.collection}>
+                <Carbon.IncludeAssets:File
+                    file={item}
+                    assetPackage={props.assetPackage}
+                    cacheBuster={props.cacheBuster}
+                    disableCacheBusterForPreloadAsset={props.disableCacheBusterForPreloadAsset}
+                    paths={props.paths}
+                />
+            </Neos.Fusion:Loop>
+        </Carbon.IncludeAssets:Internal.Wrapper>
+    `
+}

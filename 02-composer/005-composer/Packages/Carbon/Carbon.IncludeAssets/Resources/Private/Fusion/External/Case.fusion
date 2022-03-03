@@ -1,0 +1,39 @@
+prototype(Carbon.IncludeAssets:Case) < prototype(Neos.Fusion:Component) {
+    @propTypes {
+        mixin = ${PropTypes.string}
+        document = ${PropTypes.string}
+        content = ${PropTypes.string}
+        appendFilter = ${PropTypes.string}
+        contentCollection = ${PropTypes.string}
+        documentNode = ${PropTypes.instanceOf('Neos.Neos:Document').isRequired}
+        alwaysInclude = ${PropTypes.boolean}
+    }
+
+    mixin = null
+    document = ${this.mixin}
+    content = ${this.mixin}
+    appendFilter = ''
+    contentCollection = '[instanceof Neos.Neos:ContentCollection]'
+    documentNode = ${documentNode}
+
+    alwaysInclude = ${node.context.inBackend}
+
+    renderer = Neos.Fusion:Case {
+        alwaysInclude {
+            condition = ${props.alwaysInclude}
+            renderer = true
+        }
+        isDocument {
+            condition = ${props.document && q(props.documentNode).is('[instanceof ' + props.document + ']' + props.appendFilter)}
+            renderer = true
+        }
+        isContent {
+            condition = ${props.content && q(props.documentNode).children(props.contentCollection).find('[instanceof ' + props.content + ']' + props.appendFilter).is()}
+            renderer = true
+        }
+        default {
+            condition = true
+            renderer = false
+        }
+    }
+}

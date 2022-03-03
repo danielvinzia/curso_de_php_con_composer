@@ -1,0 +1,109 @@
+/**
+ * This prototype outputs the resource hints tags
+ */
+
+prototype(Carbon.IncludeAssets:ResourceHints) < prototype(Neos.Fusion:Component) {
+    @propTypes {
+        dnsPrefetch = ${PropTypes.anyOf( PropTypes.string, PropTypes.arrayOf( PropTypes.string ) )}
+        preconnect = ${PropTypes.anyOf( PropTypes.string, PropTypes.arrayOf( PropTypes.string ) )}
+        prefetch = ${PropTypes.anyOf( PropTypes.string, PropTypes.arrayOf( PropTypes.string ) )}
+        preload = ${PropTypes.anyOf( PropTypes.string, PropTypes.arrayOf( PropTypes.string ) )}
+        prerender = ${PropTypes.anyOf( PropTypes.string, PropTypes.arrayOf( PropTypes.string ) )}
+        modulePreload = ${PropTypes.anyOf( PropTypes.string, PropTypes.arrayOf( PropTypes.string ) )}
+        preloadNodes = ${PropTypes.anyOf(
+            PropTypes.instanceOf('Neos\Eel\FlowQuery\FlowQuery'),
+            PropTypes.arrayOf( PropTypes.instanceOf('Neos\ContentRepository\Domain\Model\Node') ),
+            PropTypes.instanceOf('Neos\ContentRepository\Domain\Model\Node')
+        )}
+        prerenderNodes = ${PropTypes.anyOf(
+            PropTypes.instanceOf('Neos\Eel\FlowQuery\FlowQuery'),
+            PropTypes.arrayOf( PropTypes.instanceOf('Neos\ContentRepository\Domain\Model\Node') ),
+            PropTypes.instanceOf('Neos\ContentRepository\Domain\Model\Node')
+        )}
+    }
+
+    dnsPrefetch = ${Configuration.setting('Carbon.IncludeAssets.ResourceHints.DnsPrefetch')}
+    preconnect = ${Configuration.setting('Carbon.IncludeAssets.ResourceHints.Preconnect')}
+    prefetch = ${Configuration.setting('Carbon.IncludeAssets.ResourceHints.Prefetch')}
+    preload = ${Configuration.setting('Carbon.IncludeAssets.ResourceHints.Preload')}
+    prerender = ${Configuration.setting('Carbon.IncludeAssets.ResourceHints.Prerender')}
+    modulePreload = ${Configuration.setting('Carbon.IncludeAssets.ResourceHints.ModulePreload')}
+
+    // Pass documentNodes who should be preloaded (Array, FlowQuery or a single node)
+    preloadNodes = null
+    // Pass documentNodes who should be prerendererd (Array, FlowQuery or a single node)
+    prerenderNodes = null
+
+    renderer = afx`
+        <Carbon.IncludeAssets:ResourceHints.Items @key='dnsPrefetch' items={props.dnsPrefetch} rel='dns-prefetch' />
+        <Carbon.IncludeAssets:ResourceHints.Items @key='preconnect' items={props.preconnect} rel='preconnect' />
+        <Carbon.IncludeAssets:ResourceHints.Items @key='prefetch' items={props.prefetch} rel='prefetch' />
+        <Carbon.IncludeAssets:ResourceHints.Items @key='modulePreload' items={props.modulePreload} rel='modulepreload' />
+        <Carbon.IncludeAssets:ResourceHints.Items @key='preload' items={props.preload} rel='preload' />
+        <Carbon.IncludeAssets:ResourceHints.Nodes @key='preloadNodes' items={props.preloadNodes} rel='preload' as='document' />
+        <Carbon.IncludeAssets:ResourceHints.Items @key='prerender' items={props.prerender} rel='prerender' />
+        <Carbon.IncludeAssets:ResourceHints.Nodes @key='prerenderNodes' items={props.prerenderNodes} rel='prerender' />
+    `
+}
+
+
+prototype(Carbon.IncludeAssets:ResourceHints.Items) < prototype(Neos.Fusion:Component) {
+    @propTypes {
+        items = ${PropTypes.arrayOf( PropTypes.string )}
+        rel = ${PropTypes.oneOf(['dns-prefetch', 'preconnect', 'prefetch', 'modulepreload', 'preload', 'prerender'])}
+        type = ${PropTypes.oneOf(['modulepreload', 'resourcehint'])}
+    }
+
+    items = null
+    rel = null
+    type = ${this.rel == 'modulepreload' ? 'modulepreload' : 'resourcehint'}
+
+
+    // Internal
+    items.@process.convertToArray = ${Type.isString(value) ? String.split(value, ',') : value}
+    @if.set = ${this.items && this.rel && this.type && Type.isArray(this.items) && Array.length(this.items)}
+
+    renderer = Neos.Fusion:Loop {
+        items = ${Array.unique(props.items)}
+        itemRenderer = Carbon.IncludeAssets:Internal.Tag.ResourceHint {
+            rel = ${props.rel}
+            fileObject = ${Carbon.IncludeAssets.parseFilename(item + '(' + props.type + ')')}
+            path = ${this.fileObject.filename}
+        }
+    }
+}
+
+prototype(Carbon.IncludeAssets:ResourceHints.Nodes) < prototype(Neos.Fusion:Component) {
+    @propTypes {
+        items = ${PropTypes.arrayOf( PropTypes.instanceOf('Neos\ContentRepository\Domain\Model\Node') )}
+        rel = ${PropTypes.oneOf(['preload', 'prerender'])}
+        type = ${PropTypes.string}
+    }
+
+    items = null
+    rel = null
+    as = null
+
+    // Internal
+    items.@process {
+        convertFlowQueryToArray = ${Type.instance(value, 'Neos\Eel\FlowQuery\FlowQuery') ? value.get() : value}
+        convertSingleToArray = ${Type.instance(value, 'Neos\ContentRepository\Domain\Model\Node') ? [value] : value}
+    }
+    @if.set = ${this.items && this.rel && Type.isArray(this.items) && Array.length(this.items)}
+
+    renderer = Neos.Fusion:Loop {
+        items = ${Array.unique(props.items)}
+        itemRenderer = afx`
+            <link
+                rel={props.rel}
+                as={props.as}
+                @if.isNode={Type.instance(item, 'Neos\ContentRepository\Domain\Model\Node')}
+                @if.isNotCurrent={documentNode != item}
+                @if.isDocument={q(item).is('[instanceof Neos.Neos:Document]')}
+            >
+                <Neos.Neos:NodeUri @path='attributes.href' node={item} absolute={true} />
+            </link>
+        `
+    }
+}
+

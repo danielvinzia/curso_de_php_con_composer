@@ -1,0 +1,14 @@
+Neos:
+  Fusion:
+    defaultContext:
+      BEM: 'Carbon\Eel\EelHelper\BemHelper'
+      Carbon.Array: 'Carbon\Eel\EelHelper\ArrayHelper'
+      Carbon.Backend: 'Carbon\Eel\EelHelper\BackendHelper'
+      Carbon.Date: 'Carbon\Eel\EelHelper\DateHelper'
+      Carbon.FileContent: 'Carbon\Eel\EelHelper\FileContentHelper'
+      Carbon.Number: 'Carbon\Eel\EelHelper\NumberHelper'
+      Carbon.String: 'Carbon\Eel\EelHelper\StringHelper'
+  Neos:
+    fusion:
+      autoInclude:
+        Carbon.Eel: true

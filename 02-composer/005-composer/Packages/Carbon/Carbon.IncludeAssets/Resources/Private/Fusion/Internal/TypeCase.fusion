@@ -1,0 +1,45 @@
+/**
+ * This prototype is a small helper to render html, css, js or mjs
+ *
+ * Example:
+ * type = 'js'
+ * js = 'console.log("Carbon.IncludeAssets:Internal.TypeCase")'
+ */
+
+prototype(Carbon.IncludeAssets:Internal.TypeCase) < prototype(Neos.Fusion:Component) {
+    type = null
+    html = ''
+    js = ''
+    css = ''
+    // Modules are per default the same as Javascript
+    mjs = ${this.js}
+    preload = ''
+    modulePreload = ''
+
+    renderer = Neos.Fusion:Case {
+        isHTML {
+            condition = ${String.toUpperCase(props.type) == 'HTML'}
+            renderer = ${props.html}
+        }
+        isCSS {
+            condition = ${String.toUpperCase(props.type) == 'CSS'}
+            renderer = ${props.css}
+        }
+        isJS {
+            condition = ${String.toUpperCase(props.type) == 'JS'}
+            renderer = ${props.js}
+        }
+        isMJS {
+            condition = ${String.toUpperCase(props.type) == 'MJS'}
+            renderer = ${props.mjs}
+        }
+        isPRELOAD {
+            condition = ${String.startsWith(String.toUpperCase(props.type), 'PRELOAD')}
+            renderer = ${props.preload}
+        }
+        isMODULEPRELOAD {
+            condition = ${String.toUpperCase(props.type) == 'MODULEPRELOAD'}
+            renderer = ${props.modulePreload}
+        }
+    }
+}
