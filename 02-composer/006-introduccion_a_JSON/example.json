@@ -1,0 +1,14 @@
+{
+    "name": "kolo",
+    "description": "Instituto online",
+    "courses": {
+        "advance": ["PHP", "VUEjs"],
+        "basic": ["JSON", "HTML"]
+    },
+    "example": 1,
+    "example2": "cadena de texto",
+    "example3": [1, 32, 435, 3456345],
+    "example4": null,
+    "example5": true,
+    "example6": false
+}
